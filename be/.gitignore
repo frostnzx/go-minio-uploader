@@ -1,0 +1,28 @@
+# Binaries
+*.exe
+*.o
+*.a
+*.so
+*.dylib
+
+# Build artifacts
+bin/
+pkg/
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Dependency management
+go.sum
+
+# Test cache
+testcache/
+
+# OS specific
+.DS_Store
+
+
+.env
