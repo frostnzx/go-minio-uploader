@@ -11,5 +11,5 @@ MINIO_BUCKET="image-collection"
 NEXT_PUBLIC_BACKEND_URL="http://localhost:8080"
 ```
 ##### Setup minio before running fronend or backend
-- docker compose up -d ./docker-compose.yaml
+- docker compose up -d ./minio
 
