@@ -36,7 +36,24 @@ export default function PromotionElement({
 
         console.log(response);
     };
-    const handleDownload = async () => {};
+    const handleDownload = async () => {
+        const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/csv/${promoName}`,
+            { responseType: "blob" }
+        );
+        if (response.status != 200) {
+            throw new Error("Failed to download file");
+        }
+        const blob = await response.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = promoName + ".csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const showModal = () => {
@@ -94,11 +111,16 @@ export default function PromotionElement({
                 onCancel={() => setIsModalOpen(false)}
                 footer={null}
             >
-                <b>Total : {images?.length}</b> 
+                <b>Total : {images?.length}</b>
                 <br />
-                {images?.map((image , i) => ( // have to ? because when create new collection we change state before fetch post hence why it can't fetch images
-                    <div key={i}>{image}</div>
-                ))}
+                {images?.map(
+                    (
+                        image,
+                        i // have to ? because when create new collection we change state before fetch post hence why it can't fetch images
+                    ) => (
+                        <div key={i}>{image}</div>
+                    )
+                )}
             </Modal>
         </div>
     );

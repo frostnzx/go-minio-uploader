@@ -27,6 +27,7 @@ func ConnectMinio() (*minio.Client, error) {
 		return nil, fmt.Errorf("failed to create MinIO client: %w", err)
 	}
 
+	// create image-collection bucket
 	bucketName := os.Getenv("MINIO_BUCKET")
 	location := "us-east-1"
 
@@ -34,7 +35,6 @@ func ConnectMinio() (*minio.Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if bucket exists: %w", err)
 	}
-
 	if !exists {
 		err = minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: location})
 		if err != nil {
@@ -42,7 +42,21 @@ func ConnectMinio() (*minio.Client, error) {
 		}
 		log.Printf("Successfully created bucket: %s\n", bucketName)
 	}
+	// create csv bucket
+	bucketCsvName := os.Getenv("MINIO_BUCKET_CSV")
+	location = "us-east-1"
 
+	exists, err = minioClient.BucketExists(ctx, bucketCsvName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check if bucket exists: %w", err)
+	}
+	if !exists {
+		err = minioClient.MakeBucket(ctx, bucketCsvName, minio.MakeBucketOptions{Region: location})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create bucket: %w", err)
+		}
+		log.Printf("Successfully created bucket: %s\n", bucketCsvName)
+	}
 	// No need to log anything if the bucket already exists
 	return minioClient, nil
 }

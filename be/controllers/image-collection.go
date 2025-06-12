@@ -27,7 +27,7 @@ type ImageCollectionInfo struct {
 // @Produce json
 // @Success 200 {array} ImageCollectionInfo
 // @Failure 500 {object} map[string]string
-// @Router /api/image-collections [get]
+// @Router /api/v1/image-collections [get]
 func GetAllImageCollections(c *fiber.Ctx) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -87,7 +87,7 @@ func GetAllImageCollections(c *fiber.Ctx) error {
 // @Param name path string true "Collection name to delete"
 // @Success 202 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /api/image-collections/{name} [delete]
+// @Router /api/v1/image-collections/{name} [delete]
 func DeleteImageCollection(c *fiber.Ctx) error {
 	ctx := context.Background()
 	bucketName := os.Getenv("MINIO_BUCKET")
@@ -134,7 +134,7 @@ func DeleteImageCollection(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /api/image-collections [post]
+// @Router /api/v1/image-collections [post]
 func UploadImageCollection(c *fiber.Ctx) error {
 	ctx := context.Background()
 	bucketName := os.Getenv("MINIO_BUCKET") // all file upload under image-collection bucket
@@ -217,6 +217,15 @@ func UploadImageCollection(c *fiber.Ctx) error {
 	})
 }
 
+// GetAllUploadedImages godoc
+// @Summary Get all images in a collection
+// @Description Retrieve all image names from a specific collection
+// @Tags ImageCollections
+// @Param name path string true "Collection name"
+// @Produce json
+// @Success 200 {array} string
+// @Failure 500 {object} map[string]string
+// @Router /api/v1/image-collections/{name}/images [get]
 func GetAllUploadedImages(c *fiber.Ctx) error {
 	ctx := context.Background()
 	bucketName := os.Getenv("MINIO_BUCKET")

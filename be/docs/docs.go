@@ -15,7 +15,105 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/image-collections": {
+        "/api/v1/csv/{name}": {
+            "get": {
+                "description": "Downloads a CSV file from MinIO storage",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "CSV"
+                ],
+                "summary": "Download a CSV file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the CSV file (without extension)",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates an empty CSV file and uploads it to MinIO storage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CSV"
+                ],
+                "summary": "Create and upload a CSV file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the CSV file (without extension)",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/image-collections": {
             "get": {
                 "description": "Retrieve metadata for all uploaded image collections",
                 "produces": [
@@ -103,7 +201,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/image-collections/{name}": {
+        "/api/v1/image-collections/{name}": {
             "delete": {
                 "description": "Remove all files in the specified image collection",
                 "tags": [
@@ -125,6 +223,47 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/image-collections/{name}/images": {
+            "get": {
+                "description": "Retrieve all image names from a specific collection",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ImageCollections"
+                ],
+                "summary": "Get all images in a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
                                 "type": "string"
                             }
                         }

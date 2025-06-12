@@ -75,6 +75,15 @@ export default function Home() {
         } catch (err) {
             console.log("Error submitting new promotion : ", err);
         }
+        // fetch again to create new csv file in csv-bucket name according to the promotion name
+        try {
+            const response = await axios.post(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/csv/${formData.name}`
+            );
+            console.log("Success creating a new csv : " , response.data)
+        } catch (err) {
+            console.log("Error creating a new csv : " , err)
+        }
     };
 
     return (

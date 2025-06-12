@@ -25,6 +25,7 @@ func setupFiber() *fiber.App {
 
 	// register routes
 	routes.ImageCollectionRoute(app)
+	routes.CsvRoute(app)
 
 
 	return app

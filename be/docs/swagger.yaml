@@ -16,7 +16,72 @@ info:
   title: AntD Minio API
   version: "1.0"
 paths:
-  /api/image-collections:
+  /api/v1/csv/{name}:
+    get:
+      description: Downloads a CSV file from MinIO storage
+      parameters:
+      - description: Name of the CSV file (without extension)
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Download a CSV file
+      tags:
+      - CSV
+    post:
+      consumes:
+      - application/json
+      description: Creates an empty CSV file and uploads it to MinIO storage
+      parameters:
+      - description: Name of the CSV file (without extension)
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create and upload a CSV file
+      tags:
+      - CSV
+  /api/v1/image-collections:
     get:
       description: Retrieve metadata for all uploaded image collections
       produces:
@@ -76,7 +141,7 @@ paths:
       summary: Upload a new image collection
       tags:
       - ImageCollections
-  /api/image-collections/{name}:
+  /api/v1/image-collections/{name}:
     delete:
       description: Remove all files in the specified image collection
       parameters:
@@ -99,6 +164,33 @@ paths:
               type: string
             type: object
       summary: Delete an image collection
+      tags:
+      - ImageCollections
+  /api/v1/image-collections/{name}/images:
+    get:
+      description: Retrieve all image names from a specific collection
+      parameters:
+      - description: Collection name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all images in a collection
       tags:
       - ImageCollections
 swagger: "2.0"
