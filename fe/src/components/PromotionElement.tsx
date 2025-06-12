@@ -4,26 +4,36 @@ import { FileImageTwoTone } from "@ant-design/icons";
 import { Button, Flex } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
+import { Promotion } from "@/interfaces";
 
 export default function PromotionElement({
     promoName,
     description,
     date,
-    getPromotionsList
+    getPromotionsList,
+    promotionsList,
+    setPromotionsList
 }: {
     promoName: string;
     description: string;
     date: dayjs.Dayjs;
-    getPromotionsList : Function
+    getPromotionsList : Function;
+    promotionsList : Promotion[];
+    setPromotionsList : Function;
 }) {
     const monthAndYearStr = dayjs(date).format("MMMM YYYY");
     const uploadAtStr = "Upload at " + dayjs(date).format("D/M/YYYY h:mm A");
     const handleDelete = async () => {
+        // mutate list in state first (for fast ui), then re-fetch from backend to ensure correct list
+        setPromotionsList((prev : Promotion[]) => (
+            prev.filter((promotion : Promotion) => promotion.name !== promoName)
+        )) // make a change in state first
         const response = await axios.delete(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/image-collection/${promoName}`
         );
+        getPromotionsList() // re-fetch
+
         console.log(response)
-        getPromotionsList()
     }
     return (
         <div className="w-3/4">

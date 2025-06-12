@@ -18,12 +18,7 @@ import { useEffect, useReducer, useState } from "react";
 import InputForm from "@/components/InputForm";
 import dayjs from "dayjs";
 import axios from "axios";
-
-interface Promotion {
-    name: string;
-    description: string;
-    date: dayjs.Dayjs;
-}
+import { Promotion } from "@/interfaces";
 
 let formInit: Promotion = {
     name: "",
@@ -35,24 +30,24 @@ export default function Home() {
     // Form data
     const [formData, setFormData] = useState(formInit);
     const [fileList, setFileList] = useState<File[]>([]); // also in the form but seperate
+    // modal logic
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
 
     // fetching logic
-    const [promotionsList, setPromotionsList] = useState([]);
+    const [promotionsList, setPromotionsList] = useState<Promotion[]>([]);
     const getPromotionsList = async () => {
         const response = await axios.get(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/image-collections`
         );
         setPromotionsList(response.data);
     };
+    // initial fetch
     useEffect(() => {
         getPromotionsList();
     }, []);
-
-    // modal logic
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
 
     // Submit handler send into form prop
     const submitHandler = async () => {
@@ -69,17 +64,23 @@ export default function Home() {
         };
         data.append("info", JSON.stringify(jsonInfoData));
         fileList.forEach((file) => data.append("images", file));
-
         try {
+            // mutate list in state first (for fast ui), then re-fetch from backend to ensure correct list
+            const newPromotion : Promotion = {
+                ...jsonInfoData , 
+                date : formData.date // need to create this newPromotion because if we use jsonInfoData the date will be of type string
+            }
+            setPromotionsList((prev : Promotion[]) => [...prev , newPromotion]); // mutate state first
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/image-collection`,
                 data
             );
+            getPromotionsList(); // re-fetch
+
             console.log("Success submitting new promotion : ", response.data);
         } catch (err) {
             console.log("Error submitting new promotion : ", err);
         }
-        getPromotionsList();
     };
 
     return (
@@ -114,6 +115,8 @@ export default function Home() {
                         description={promotion.description}
                         date={promotion.date}
                         getPromotionsList={getPromotionsList}
+                        promotionsList={promotionsList}
+                        setPromotionsList={setPromotionsList}
                     />
                 ))}
             </div>
