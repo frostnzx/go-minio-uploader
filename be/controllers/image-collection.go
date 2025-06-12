@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	minioUpload "github.com/frostnzx/antd-minio-go/storages"
@@ -214,4 +215,34 @@ func UploadImageCollection(c *fiber.Ctx) error {
 		"msg":      imageCollectionInfo.Name + " collection successfully uploaded",
 		"uploaded": savedFiles,
 	})
+}
+
+func GetAllUploadedImages(c *fiber.Ctx) error {
+	ctx := context.Background()
+	bucketName := os.Getenv("MINIO_BUCKET")
+
+	prefix := c.Params("name") + "/"
+
+	// connect to minio
+	minioClient, err := minioUpload.ConnectMinio()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	// list object with the prefix out first
+	objectCh := minioClient.ListObjects(ctx, bucketName, minio.ListObjectsOptions{
+		Prefix:    prefix,
+		Recursive: true, // include all nested "files"
+	})
+	var imageNames []string
+	for object := range objectCh {
+		// skip metadata.json we only want images name
+		if bytes.HasSuffix([]byte(object.Key), []byte("/metadata.json")) {
+			continue
+		}
+		imageName := strings.Split(object.Key, "/")[1]
+		imageNames = append(imageNames, imageName)
+	}
+	return c.Status(fiber.StatusAccepted).JSON(imageNames)
 }
