@@ -19,6 +19,14 @@ type ImageCollectionInfo struct {
 	Date        time.Time `json:"date"`
 }
 
+// GetAllImageCollections godoc
+// @Summary Get all image collections
+// @Description Retrieve metadata for all uploaded image collections
+// @Tags ImageCollections
+// @Produce json
+// @Success 200 {array} ImageCollectionInfo
+// @Failure 500 {object} map[string]string
+// @Router /api/image-collections [get]
 func GetAllImageCollections(c *fiber.Ctx) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -70,9 +78,15 @@ func GetAllImageCollections(c *fiber.Ctx) error {
 
 	return c.JSON(collections)
 }
-func GetImageCollection(c *fiber.Ctx) error {
-	return nil
-}
+
+// DeleteImageCollection godoc
+// @Summary Delete an image collection
+// @Description Remove all files in the specified image collection
+// @Tags ImageCollections
+// @Param name path string true "Collection name to delete"
+// @Success 202 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/image-collections/{name} [delete]
 func DeleteImageCollection(c *fiber.Ctx) error {
 	ctx := context.Background()
 	bucketName := os.Getenv("MINIO_BUCKET")
@@ -107,6 +121,19 @@ func DeleteImageCollection(c *fiber.Ctx) error {
 		"msg": "Successfully removed the collection",
 	})
 }
+
+// UploadImageCollection godoc
+// @Summary Upload a new image collection
+// @Description Upload multiple images along with metadata (name, description, date)
+// @Tags ImageCollections
+// @Accept multipart/form-data
+// @Produce json
+// @Param info formData string true "Metadata JSON for the image collection (name, description, date)"
+// @Param images formData file true "Multiple image files"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/image-collections [post]
 func UploadImageCollection(c *fiber.Ctx) error {
 	ctx := context.Background()
 	bucketName := os.Getenv("MINIO_BUCKET") // all file upload under image-collection bucket

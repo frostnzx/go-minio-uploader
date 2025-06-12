@@ -1,0 +1,104 @@
+basePath: /
+definitions:
+  controllers.ImageCollectionInfo:
+    properties:
+      date:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for uploading and managing images with MinIO and AntD frontend.
+  title: AntD Minio API
+  version: "1.0"
+paths:
+  /api/image-collections:
+    get:
+      description: Retrieve metadata for all uploaded image collections
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/controllers.ImageCollectionInfo'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all image collections
+      tags:
+      - ImageCollections
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload multiple images along with metadata (name, description,
+        date)
+      parameters:
+      - description: Metadata JSON for the image collection (name, description, date)
+        in: formData
+        name: info
+        required: true
+        type: string
+      - description: Multiple image files
+        in: formData
+        name: images
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload a new image collection
+      tags:
+      - ImageCollections
+  /api/image-collections/{name}:
+    delete:
+      description: Remove all files in the specified image collection
+      parameters:
+      - description: Collection name to delete
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete an image collection
+      tags:
+      - ImageCollections
+swagger: "2.0"

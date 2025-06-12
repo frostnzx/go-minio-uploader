@@ -8,7 +8,6 @@ import (
 func ImageCollectionRoute(a *fiber.App) {
 	route := a.Group("/api/v1")
 	route.Get("/image-collections" , controllers.GetAllImageCollections)
-	route.Get("/image-collection" , controllers.GetImageCollection)
 	route.Post("/image-collection" , controllers.UploadImageCollection)
 	route.Delete("/image-collection/:name" , controllers.DeleteImageCollection)
 }

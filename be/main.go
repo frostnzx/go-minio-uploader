@@ -1,3 +1,8 @@
+// @title AntD Minio API
+// @version 1.0
+// @description API for uploading and managing images with MinIO and AntD frontend.
+// @host localhost:8080
+// @BasePath /
 package main
 
 import (
@@ -7,6 +12,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	_ "github.com/frostnzx/antd-minio-go/docs"
+	"github.com/gofiber/swagger"
 )
 
 func setupFiber() *fiber.App {
@@ -14,6 +21,7 @@ func setupFiber() *fiber.App {
 
 
 	app.Use(cors.New())
+	app.Get("/swagger/*" , swagger.HandlerDefault)
 
 	// register routes
 	routes.ImageCollectionRoute(app)
