@@ -78,6 +78,15 @@ export default function InputForm({
                             required: true,
                             message: "Please input your username!",
                         },
+                        {
+                            validator: (_, value) =>
+                                value && !value.includes(" ")
+                                    ? Promise.resolve()
+                                    : Promise.reject(
+                                          new Error("No spaces allowed")
+                                      ),
+                        },
+                        {},
                     ]}
                 >
                     <Input name="name" onChange={onInputChange} />
@@ -159,7 +168,11 @@ export default function InputForm({
                         textAlign: "center",
                     }}
                 >
-                    <Button type="primary" htmlType="submit" disabled={fileList.length === 0}>
+                    <Button
+                        type="primary"
+                        htmlType="submit"
+                        disabled={fileList.length === 0 || formData.name.includes(" ")}
+                    >
                         Submit
                     </Button>
                 </Form.Item>

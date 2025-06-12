@@ -9,4 +9,5 @@ func CsvRoute(a *fiber.App) {
 	route := a.Group("/api/v1")
 	route.Get("/csv/:name" , controllers.DownloadCsvFile)
 	route.Post("/csv/:name" , controllers.CreateCsvFile)
+	route.Delete("/csv/:name", controllers.DeleteCsvFile)
 }

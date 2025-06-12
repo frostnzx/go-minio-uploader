@@ -28,10 +28,10 @@ func CreateCsvFile(c *fiber.Ctx) error {
 	// create file first
 	file, err := os.Create(fileName)
 	if err != nil {
-		c.Status(500).SendString("Failed to create CSV: " + err.Error())
+		return c.Status(500).SendString("Failed to create CSV: " + err.Error())
 	}
 	defer file.Close()
-
+	defer os.Remove(fileName)
 	// connect to minio
 	minioClient, err := minioUpload.ConnectMinio()
 	if err != nil {
@@ -46,6 +46,7 @@ func CreateCsvFile(c *fiber.Ctx) error {
 	if err != nil {
 		c.Status(500).SendString("Failed to upload CSV: " + err.Error())
 	}
+
 	return c.Status(200).JSON(fiber.Map{
 		"msg": fileName + "Successfully uploaded",
 	})
@@ -85,4 +86,25 @@ func DownloadCsvFile(c *fiber.Ctx) error {
 	c.Set("Content-Disposition", "attachment; filename="+fileName)
 	c.Set("Content-Type", stat.ContentType)
 	return c.Status(200).SendStream(object)
+}
+
+func DeleteCsvFile(c *fiber.Ctx) error {
+	ctx := context.Background()
+	bucketName := os.Getenv("MINIO_BUCKET_CSV")
+	fileName := c.Params("name") + ".csv"
+
+	// connect to minio
+	minioClient, err := minioUpload.ConnectMinio()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	err = minioClient.RemoveObject(ctx, bucketName, fileName, minio.RemoveObjectOptions{})
+	if err != nil {
+		return c.Status(500).SendString("Failed to delete object")
+	}
+
+	return c.Status(200).SendString("Delete " + fileName + " Successful")
 }

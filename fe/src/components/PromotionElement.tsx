@@ -34,6 +34,12 @@ export default function PromotionElement({
         );
         getPromotionsList(); // re-fetch
 
+
+        // delete csv too
+        await axios.delete(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/csv/${promoName}`
+        );
+
         console.log(response);
     };
     const handleDownload = async () => {
