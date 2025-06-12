@@ -5,6 +5,7 @@ import { Button, Flex } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
 import { Promotion } from "@/interfaces";
+import { randomUUID } from "crypto";
 
 export default function PromotionElement({
     promoName,
@@ -84,7 +85,7 @@ export default function PromotionElement({
                     </Button>
                 </div>
             </div>
-            <Divider style={{ borderColor: "#7cb305", marginTop: "50px" }} />
+            <Divider style={{ borderColor: "#000000", marginTop: "50px" }} />
 
             <Modal
                 title={`Uploaded images for ${promoName} collection`}
@@ -93,12 +94,10 @@ export default function PromotionElement({
                 onCancel={() => setIsModalOpen(false)}
                 footer={null}
             >
-                <b>
-                Total : {images.length} 
-                </b>
+                <b>Total : {images?.length}</b> 
                 <br />
-                {images.map((image) => (
-                    <div>{image}</div>
+                {images?.map((image , i) => ( // have to ? because when create new collection we change state before fetch post hence why it can't fetch images
+                    <div key={i}>{image}</div>
                 ))}
             </Modal>
         </div>

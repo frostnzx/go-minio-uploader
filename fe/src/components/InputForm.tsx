@@ -119,18 +119,37 @@ export default function InputForm({
                         allowClear={false}
                     />
                 </Form.Item>
-                <Dragger {...props}>
-                    <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">
-                        Click or drag file to this area to upload
-                    </p>
-                    <p className="ant-upload-hint">
-                        Support for a single or bulk upload. Strictly prohibited
-                        from uploading company data or other banned files.
-                    </p>
-                </Dragger>
+                <Form.Item
+                    label="Upload File"
+                    required
+                    rules={[
+                        {
+                            validator: async () => {
+                                if (fileList.length === 0) {
+                                    return Promise.reject(
+                                        new Error(
+                                            "Please upload at least one file"
+                                        )
+                                    );
+                                }
+                            },
+                        },
+                    ]}
+                >
+                    <Dragger {...props}>
+                        <p className="ant-upload-drag-icon">
+                            <InboxOutlined />
+                        </p>
+                        <p className="ant-upload-text">
+                            Click or drag file to this area to upload
+                        </p>
+                        <p className="ant-upload-hint">
+                            Support for a single or bulk upload. Strictly
+                            prohibited from uploading company data or other
+                            banned files.
+                        </p>
+                    </Dragger>
+                </Form.Item>
 
                 <Form.Item
                     label={null}
@@ -140,7 +159,7 @@ export default function InputForm({
                         textAlign: "center",
                     }}
                 >
-                    <Button type="primary" htmlType="submit">
+                    <Button type="primary" htmlType="submit" disabled={fileList.length === 0}>
                         Submit
                     </Button>
                 </Form.Item>

@@ -65,12 +65,6 @@ export default function Home() {
         data.append("info", JSON.stringify(jsonInfoData));
         fileList.forEach((file) => data.append("images", file));
         try {
-            // mutate list in state first (for fast ui), then re-fetch from backend to ensure correct list
-            const newPromotion : Promotion = {
-                ...jsonInfoData , 
-                date : formData.date // need to create this newPromotion because if we use jsonInfoData the date will be of type string
-            }
-            setPromotionsList((prev : Promotion[]) => [...prev , newPromotion]); // mutate state first
             const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/image-collection`,
                 data
