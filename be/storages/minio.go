@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
@@ -17,30 +17,32 @@ func ConnectMinio() (*minio.Client, error) {
 	secretAccessKey := os.Getenv("MINIO_SECRETKEY")
 	useSSL := false
 
-	endpoint := fmt.Sprintf("%s:%s",host,port)
+	endpoint := fmt.Sprintf("%s:%s", host, port)
 
-	minioClient, errInit := minio.New(endpoint, &minio.Options{
+	minioClient, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
 	})
-	if errInit != nil {
-		log.Fatalln(errInit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create MinIO client: %w", err)
 	}
 
 	bucketName := os.Getenv("MINIO_BUCKET")
 	location := "us-east-1"
 
-	err := minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: location})
+	exists, err := minioClient.BucketExists(ctx, bucketName)
 	if err != nil {
-		// Check to see if we already own this bucket (which happens if you run this twice)
-		exists, errBucketExists := minioClient.BucketExists(ctx, bucketName)
-		if errBucketExists == nil && exists {
-			log.Printf("We already own %s\n", bucketName)
-		} else {
-			log.Fatalln(err)
-		}
-	} else {
-		log.Printf("Successfully created %s\n", bucketName)
+		return nil, fmt.Errorf("failed to check if bucket exists: %w", err)
 	}
-	return minioClient, errInit
+
+	if !exists {
+		err = minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: location})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create bucket: %w", err)
+		}
+		log.Printf("Successfully created bucket: %s\n", bucketName)
+	}
+
+	// No need to log anything if the bucket already exists
+	return minioClient, nil
 }

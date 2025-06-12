@@ -20,10 +20,92 @@ type ImageCollectionInfo struct {
 }
 
 func GetAllImageCollections(c *fiber.Ctx) error {
-	return nil
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	bucketName := os.Getenv("MINIO_BUCKET")
+
+	// create minio connection first
+	minioClient, err := minioUpload.ConnectMinio()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	// get obj
+	objectCh := minioClient.ListObjects(ctx, bucketName, minio.ListObjectsOptions{
+		Recursive: true,
+	})
+	collections := []ImageCollectionInfo{}
+
+	for object := range objectCh {
+		if object.Err != nil {
+			log.Println("Error reading object:", object.Err)
+			continue
+		}
+
+		// get only meta data file
+		if !bytes.HasSuffix([]byte(object.Key), []byte("/metadata.json")) {
+			continue
+		}
+
+		// Get the metadata object
+		obj, err := minioClient.GetObject(ctx, bucketName, object.Key, minio.GetObjectOptions{})
+		if err != nil {
+			log.Println("Error getting object:", err)
+			continue
+		}
+
+		var meta ImageCollectionInfo
+		err = json.NewDecoder(obj).Decode(&meta)
+		if err != nil {
+			log.Println("Error decoding metadata:", err)
+			continue
+		}
+		log.Printf("meta (decoded) : %s\n", meta)
+
+		collections = append(collections, meta)
+		obj.Close()
+	}
+
+	return c.JSON(collections)
 }
 func GetImageCollection(c *fiber.Ctx) error {
 	return nil
+}
+func DeleteImageCollection(c *fiber.Ctx) error {
+	ctx := context.Background()
+	bucketName := os.Getenv("MINIO_BUCKET")
+
+	prefix := c.Params("name") + "/"
+
+	// connect to minio
+	minioClient, err := minioUpload.ConnectMinio()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	// list object with the prefix out first
+	objectCh := minioClient.ListObjects(ctx, bucketName, minio.ListObjectsOptions{
+		Prefix:    prefix,
+		Recursive: true, // include all nested "files"
+	})
+	for object := range objectCh {
+		if object.Err != nil {
+			log.Println("Error listing object:", object.Err)
+			continue
+		}
+		err := minioClient.RemoveObject(ctx, bucketName, object.Key, minio.RemoveObjectOptions{})
+		if err != nil {
+			log.Println("Error deleting object:", err)
+			continue
+		}
+		log.Println("Deleted:", object.Key)
+	}
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+		"msg": "Successfully removed the collection",
+	})
 }
 func UploadImageCollection(c *fiber.Ctx) error {
 	ctx := context.Background()
@@ -102,7 +184,7 @@ func UploadImageCollection(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"msg": imageCollectionInfo.Name + " collection successfully uploaded",
-		"uploaded" : savedFiles,
+		"msg":      imageCollectionInfo.Name + " collection successfully uploaded",
+		"uploaded": savedFiles,
 	})
 }
